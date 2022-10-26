@@ -32,7 +32,7 @@ namespace SftpMonitorService
             }
 
             _logger.LogInformation("Binding Events from Input Folder: {inputFolder}", _inputFolder);
-            _folderWatcher = new FileSystemWatcher(_inputFolder, "*.TXT")
+            _folderWatcher = new FileSystemWatcher(_inputFolder, "*.ZIP")
             {
                 NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.LastWrite | NotifyFilters.FileName |
                                   NotifyFilters.DirectoryName
@@ -49,7 +49,6 @@ namespace SftpMonitorService
             {
                 _logger.LogInformation("InBound Change Event Triggered by [{e.FullPath}]", e.FullPath);
 
-                // do some work
                 using (var scope = _services.CreateScope())
                 {
                     var ftpService = scope.ServiceProvider.GetRequiredService<IFtpService>();
