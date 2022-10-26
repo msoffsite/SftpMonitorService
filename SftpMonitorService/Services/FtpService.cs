@@ -30,7 +30,7 @@ namespace SftpMonitorService.Services
                 var password = _ftpServiceSettings.Value.Password;
                 using var client = new WebClient();
                 client.Credentials = new NetworkCredential(username, password);
-                client.UploadFile(ftpPath, WebRequestMethods.Ftp.UploadFile, e.FullPath);
+                await client.UploadFileTaskAsync(ftpPath, WebRequestMethods.Ftp.UploadFile, e.FullPath);
                 _logger.LogInformation("FTP file transferred.");
             }
             catch(Exception ex)
