@@ -32,7 +32,7 @@ namespace SftpMonitorService
             }
 
             _logger.LogInformation("Binding Events from Input Folder: {inputFolder}", _inputFolder);
-            _folderWatcher = new FileSystemWatcher(_inputFolder, "*.ZIP")
+            _folderWatcher = new FileSystemWatcher(_inputFolder, "*.TXT")
             {
                 NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.LastWrite | NotifyFilters.FileName |
                                   NotifyFilters.DirectoryName
