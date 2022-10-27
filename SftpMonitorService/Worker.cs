@@ -1,5 +1,6 @@
 using SftpMonitorService.Services;
 using Microsoft.Extensions.Options;
+using SftpMonitorService.TransferLog;
 
 namespace SftpMonitorService
 {
@@ -9,12 +10,14 @@ namespace SftpMonitorService
         private FileSystemWatcher? _folderWatcher;
         private readonly string _inputFolder;
         private readonly IServiceProvider _services;
+        private readonly IHandler _logFileHandler;
 
-        public Worker(ILogger<Worker> logger, IOptions<AppSettings> settings, IServiceProvider services)
+        public Worker(ILogger<Worker> logger, IOptions<AppSettings> settings, IServiceProvider services, IHandler logFileHandler)
         {
             _logger = logger;
             _services = services;
             _inputFolder = settings.Value.InputFolder;
+            _logFileHandler = logFileHandler;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -32,7 +35,7 @@ namespace SftpMonitorService
             }
 
             _logger.LogInformation("Binding Events from Input Folder: {inputFolder}", _inputFolder);
-            _folderWatcher = new FileSystemWatcher(_inputFolder, "*.TXT")
+            _folderWatcher = new FileSystemWatcher(_inputFolder, "*.ZIP")
             {
                 NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.LastWrite | NotifyFilters.FileName |
                                   NotifyFilters.DirectoryName
@@ -47,15 +50,22 @@ namespace SftpMonitorService
         {
             if (e.ChangeType == WatcherChangeTypes.Created)
             {
-                _logger.LogInformation("InBound Change Event Triggered by [{e.FullPath}]", e.FullPath);
+                string logMessage = $"InBound Change Event Triggered by [{e.FullPath}]";
+                _logger.LogInformation(logMessage, e.FullPath);
+                _logFileHandler.Insert(logMessage);
 
                 using (var scope = _services.CreateScope())
                 {
-                    var ftpService = scope.ServiceProvider.GetRequiredService<IFtpService>();
-                    await ftpService.Run(e);
+                    //var ftpService = scope.ServiceProvider.GetRequiredService<IFtpService>();
+                    //await ftpService.Run(e);
+
+                    var sFtpService = scope.ServiceProvider.GetRequiredService<ISftpService>();
+                    await sFtpService.Run(e);
                 }
 
-                _logger.LogInformation("Done with Inbound Change Event");
+                logMessage = $"InBound Change Event Completed for [{e.FullPath}]";
+                _logger.LogInformation(logMessage, e.FullPath);
+                _logFileHandler.Insert(logMessage);
             }
         }
 

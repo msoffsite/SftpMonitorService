@@ -4,6 +4,7 @@ using Serilog;
 using Serilog.Enrichers;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
+using SftpMonitorService.TransferLog;
 
 namespace SftpMonitorService
 {
@@ -56,7 +57,10 @@ namespace SftpMonitorService
                     services.AddHostedService<Worker>();
                     services.Configure<AppSettings>(hostContext.Configuration.GetSection("AppSettings"));
                     services.Configure<FtpServiceSettings>(hostContext.Configuration.GetSection("FtpServiceSettings"));
+                    services.Configure<SftpServiceSettings>(hostContext.Configuration.GetSection("SftpServiceSettings"));
                     services.AddScoped<IFtpService, FtpService>();
+                    services.AddScoped<ISftpService, SftpService>();
+                    services.AddScoped<IHandler, Handler>();
                 })
                 .UseSerilog();
     }
